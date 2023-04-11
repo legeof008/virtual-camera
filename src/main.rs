@@ -61,13 +61,22 @@ const MAP_OF_VIEW: [((i32, i32, i32), (i32, i32, i32)); 48] = [
     ((20, 0, 25), (20, 0, 30)),
 ];
 
+const WINDOW_NAME: &str = "vcam";
+const WIDTH: f64 = 800.;
+const HEIGHT: f64 = 600.;
+const ROTATION_STEP: f64 = 10.;
+const STARTING_FOV: f64 = 45.;
+const STARTING_NEAR: f64 = 0.1;
+const STARTING_FAR: f64 = 100.;
+const STARTING_RADIUS: f64 = 2.;
+
+
+
 fn main() {
-    let width = 800.;
-    let height = 600.;
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let window = video_subsystem
-        .window("vcam", width as u32, height as u32)
+        .window(WINDOW_NAME, WIDTH as u32, HEIGHT as u32)
         .position_centered()
         .build()
         .unwrap();
@@ -81,13 +90,11 @@ fn main() {
     let mut i = 0;
 
     let mut global_state_vector = vec4(3., -2., 5., 0.);
-    let mut projection_radius = 2.;
+    let mut projection_radius = STARTING_RADIUS;
     let mut rotate_y = 0.;
     let mut rotate_x = 0.;
 
-    let rotation_step = 45.;
-
-    let proj = perspective(Deg(45.), 800. / 600., 0.1, 100.0);
+    let proj = perspective(Deg(STARTING_FOV), WIDTH / HEIGHT, STARTING_NEAR, STARTING_FAR);
     'game: loop {
         i = (i + 1) % 255;
 
@@ -126,19 +133,19 @@ fn main() {
                 Event::KeyDown {
                     keycode: Some(Keycode::W),
                     ..
-                } => rotate_x += rotation_step,
+                } => rotate_x += ROTATION_STEP,
                 Event::KeyDown {
                     keycode: Some(Keycode::S),
                     ..
-                } => rotate_x -= rotation_step,
+                } => rotate_x -= ROTATION_STEP,
                 Event::KeyDown {
                     keycode: Some(Keycode::E),
                     ..
-                } => rotate_y -= rotation_step,
+                } => rotate_y -= ROTATION_STEP,
                 Event::KeyDown {
                     keycode: Some(Keycode::Q),
                     ..
-                } => rotate_y += rotation_step,
+                } => rotate_y += ROTATION_STEP,
                 Event::KeyDown {
                     keycode: Some(Keycode::Z),
                     ..
@@ -147,6 +154,10 @@ fn main() {
                     keycode: Some(Keycode::X),
                     ..
                 } => projection_radius += 0.1,
+                Event::KeyDown {
+                    keycode: Some(Keycode::C),
+                    ..
+                } => projection_radius = STARTING_RADIUS,
                 _ => {}
             }
         }
@@ -155,10 +166,10 @@ fn main() {
 
         for edge in MAP_OF_VIEW {
             let p1 = get_clipped(edge.0, global_state_vector, rot_y, rot_x, proj);
-            let p1_projected = project_onto(p1, height, width, projection_radius);
+            let p1_projected = project_onto(p1, HEIGHT, WIDTH, projection_radius);
 
             let p2 = get_clipped(edge.1, global_state_vector, rot_y, rot_x, proj);
-            let p2_projected = project_onto(p2, height, width, projection_radius);
+            let p2_projected = project_onto(p2, HEIGHT, WIDTH, projection_radius);
 
             if not_drawable((p1,p2)) {
                 continue;
