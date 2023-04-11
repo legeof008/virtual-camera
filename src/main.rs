@@ -81,7 +81,7 @@ fn main() {
     let mut i = 0;
 
     let mut global_state_vector = vec4(3., -2., 5., 0.);
-    let projection_radius = 2.;
+    let mut projection_radius = 2.;
     let mut rotate_y = 0.;
     let mut rotate_x = 0.;
 
@@ -139,6 +139,14 @@ fn main() {
                     keycode: Some(Keycode::Q),
                     ..
                 } => rotate_y += rotation_step,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Z),
+                    ..
+                } => projection_radius -= 0.1,
+                Event::KeyDown {
+                    keycode: Some(Keycode::X),
+                    ..
+                } => projection_radius += 0.1,
                 _ => {}
             }
         }
